@@ -149,6 +149,10 @@ const static std::vector<SceneConfig> scene_configs =
 	{"hairball", rtm::vec3(0, 0, 10), rtm::vec3(0, 0, 0), 24.0f}, //HAIRBALL
 
 	{"bistro", rtm::vec3(-8.0, 2.0, 2.0), rtm::vec3(0.0f, 1.0f, -1.0f), 12.0f}, //BISTRO
+	
+	{"triangle", rtm::vec3(0.0, 0.0, 5.0), rtm::vec3(0.0f, 0.0f, 0.0f), 24.0f}, //TRIANGLE
+	
+	{"teapot", rtm::vec3(0.0, 0.0, 5.0), rtm::vec3(0.0f, 0.0f, 0.0f), 24.0f}, //TEAPOT
 };
 
 
