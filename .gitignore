@@ -423,3 +423,4 @@ out/
 datasets/
 
 ext/
+src/trax-kernel/riscv/kernel.dump
