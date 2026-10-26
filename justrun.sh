@@ -1,1 +1,0 @@
-cd src/trax-kernel/ && make && cd ../.. && ./build/src/arches-v2/arches-v2 --framebuffer-width=350 --framebuffer-height=350 --dataset-dir='/home/vincent/Desktop/CS6959-RTHW/datasets' --scene-name=sponza
