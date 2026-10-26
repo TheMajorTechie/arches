@@ -7,6 +7,7 @@
 #include "trax-kernel/intersect.hpp"
 #include "units/unit-texture.hpp"
 #include "isa/instructions.hpp"
+#include "simconfig.hpp"
 
 namespace Arches
 {
@@ -100,251 +101,261 @@ namespace Arches
 		{
 			std::string project_folder_path = get_project_folder_path();
 
-#if 0 // RTX 4090 ish
-	//Compute
-	double core_clock = 2235.0e6;
-	double dram_clock = 5250.0e6;
-	uint64_t stack_size = 512;
-	uint num_tms = 128;
-	uint num_tps = 128;
-	uint num_threads = 12;
+			
 
-	//Memory
-	uint64_t block_size = CACHE_BLOCK_SIZE;
-	uint num_partitions = 12;
-	uint partition_stride = 1 << 12;
+			CoreSimConfig config = CoreSimConfig::load_config_from_file(project_folder_path + "test.cfg", project_folder_path);
 
-	//DRAM
-	UnitDRAM::Configuration dram_config;
-	dram_config.config_path = project_folder_path + "build\\src\\arches-v2\\config-files\\gddr6x_21000_config.yaml";
-	dram_config.size = 1ull << 30; //1GB per partition
-	dram_config.clock_ratio = dram_clock / core_clock;
-	dram_config.latency = 254;
+			config.dram_config.config_path = project_folder_path + "build/src/arches-v2/config-files/gddr6_14000_config.yaml";
 
-	//L2$
-	UnitL2Cache::Configuration l2_config;
-	l2_config.level = 2;
-	l2_config.block_prefetch = true;
-	l2_config.miss_alloc = true;
-	l2_config.size = 6 << 20;
-	l2_config.associativity = 16;
-	l2_config.policy = Units::UnitCacheBase::Policy::LRU;
-	l2_config.num_slices = 6;
-	l2_config.crossbar_width = l2_config.num_slices;
-	l2_config.num_mshr = 256;
-	l2_config.num_subentries = 4;
-	l2_config.latency = 187;
+			/*
+			#if 0 // RTX 4090 ish
+				//Compute
+				double core_clock = 2235.0e6;
+				double dram_clock = 5250.0e6;
+				uint64_t stack_size = 512;
+				uint num_tms = 128;
+				uint num_tps = 128;
+				uint num_threads = 12;
 
-	UnitL2Cache::PowerConfig l2_power_config;
+				//Memory
+				uint64_t block_size = CACHE_BLOCK_SIZE;
+				uint num_partitions = 12;
+				uint partition_stride = 1 << 12;
 
-	Units::UnitCrossbar::Configuration xbar_config;
-	xbar_config.num_slices = l2_config.num_slices;
-	xbar_config.slice_stride = l2_config.block_size;
-	xbar_config.num_partitions = num_partitions;
-	xbar_config.partition_stride = partition_stride;
+				//DRAM
+				UnitDRAM::Configuration dram_config;
+				dram_config.config_path = project_folder_path + "build\\src\\arches-v2\\config-files\\gddr6x_21000_config.yaml";
+				dram_config.size = 1ull << 30; //1GB per partition
+				dram_config.clock_ratio = dram_clock / core_clock;
+				dram_config.latency = 254;
 
-	//L1d$
-	UnitL1Cache::Configuration l1d_config;
-	l1d_config.level = 1;
-	l1d_config.miss_alloc = true;
-	l1d_config.size = 128 << 10;
-	l1d_config.associativity = 32;
-	l1d_config.policy = Units::UnitCacheBase::Policy::LRU;
-	l1d_config.num_banks = 8;
-	l1d_config.crossbar_width = l1d_config.num_banks;
-	l1d_config.num_mshr = 512;
-	l1d_config.num_subentries = 16;
-	l1d_config.latency = 39;
+				//L2$
+				UnitL2Cache::Configuration l2_config;
+				l2_config.level = 2;
+				l2_config.block_prefetch = true;
+				l2_config.miss_alloc = true;
+				l2_config.size = 6 << 20;
+				l2_config.associativity = 16;
+				l2_config.policy = Units::UnitCacheBase::Policy::LRU;
+				l2_config.num_slices = 6;
+				l2_config.crossbar_width = l2_config.num_slices;
+				l2_config.num_mshr = 256;
+				l2_config.num_subentries = 4;
+				l2_config.latency = 187;
 
-	UnitL1Cache::PowerConfig l1d_power_config;
+				UnitL2Cache::PowerConfig l2_power_config;
 
-	UnitRTCore::Configuration rtc_config;
-	rtc_config.max_rays = 64;
-	rtc_config.num_cache_ports = 4;
+				Units::UnitCrossbar::Configuration xbar_config;
+				xbar_config.num_slices = l2_config.num_slices;
+				xbar_config.slice_stride = l2_config.block_size;
+				xbar_config.num_partitions = num_partitions;
+				xbar_config.partition_stride = partition_stride;
 
-#elif 0 // RTX 3070 ish
-		// Compute
-			double core_clock = 1500.0e6;
-			uint64_t stack_size = 512;
-			uint num_tms = 46;
-			uint num_tps = 128;
-			uint num_threads = 12;
+				//L1d$
+				UnitL1Cache::Configuration l1d_config;
+				l1d_config.level = 1;
+				l1d_config.miss_alloc = true;
+				l1d_config.size = 128 << 10;
+				l1d_config.associativity = 32;
+				l1d_config.policy = Units::UnitCacheBase::Policy::LRU;
+				l1d_config.num_banks = 8;
+				l1d_config.crossbar_width = l1d_config.num_banks;
+				l1d_config.num_mshr = 512;
+				l1d_config.num_subentries = 16;
+				l1d_config.latency = 39;
 
-			// Memory
-			double dram_clock = 3500.0e6;
-			uint num_partitions = 8;
-			uint partition_stride = 1 << 12;
+				UnitL1Cache::PowerConfig l1d_power_config;
 
-			// DRAM
-			UnitDRAM::Configuration dram_config;
-			dram_config.config_path = project_folder_path + "build\\src\\arches-v2\\config-files\\gddr6_14000_config.yaml";
-			dram_config.size = 1ull << 30; // 1GB per partition
-			dram_config.clock_ratio = dram_clock / core_clock;
-			dram_config.latency = 254;
+				UnitRTCore::Configuration rtc_config;
+				rtc_config.max_rays = 64;
+				rtc_config.num_cache_ports = 4;
 
-			// L2$
-			UnitL2Cache::Configuration l2_config;
-			l2_config.level = 2;
-			l2_config.miss_alloc = true;
-			l2_config.size = 512 << 10;
-			l2_config.associativity = 16;
-			l2_config.policy = Units::UnitCacheBase::Policy::LRU;
-			l2_config.num_slices = 4;
-			l2_config.crossbar_width = l2_config.num_slices;
-			l2_config.num_mshr = 192;
-			l2_config.num_subentries = 4;
-			l2_config.latency = 187;
+			#elif 0 // RTX 3070 ish
+					// Compute
+						double core_clock = 1500.0e6;
+						uint64_t stack_size = 512;
+						uint num_tms = 46;
+						uint num_tps = 128;
+						uint num_threads = 12;
 
-			UnitL2Cache::PowerConfig l2_power_config;
+						// Memory
+						double dram_clock = 3500.0e6;
+						uint num_partitions = 8;
+						uint partition_stride = 1 << 12;
 
-			Units::UnitCrossbar::Configuration xbar_config;
-			xbar_config.num_slices = l2_config.num_slices;
-			xbar_config.slice_stride = l2_config.block_size;
-			xbar_config.num_partitions = num_partitions;
-			xbar_config.partition_stride = partition_stride;
+						// DRAM
+						UnitDRAM::Configuration dram_config;
+						dram_config.config_path = project_folder_path + "build\\src\\arches-v2\\config-files\\gddr6_14000_config.yaml";
+						dram_config.size = 1ull << 30; // 1GB per partition
+						dram_config.clock_ratio = dram_clock / core_clock;
+						dram_config.latency = 254;
 
-			// L1d$
-			UnitL1Cache::Configuration l1d_config;
-			l1d_config.level = 1;
-			l1d_config.miss_alloc = true;
-			l1d_config.size = 128 << 10;
-			l1d_config.associativity = 32;
-			l1d_config.policy = Units::UnitCacheBase::Policy::FIFO;
-			l1d_config.num_banks = 4;
-			l1d_config.crossbar_width = l1d_config.num_banks;
-			l1d_config.num_mshr = 384;
-			l1d_config.num_subentries = 48;
-			l1d_config.latency = 39;
+						// L2$
+						UnitL2Cache::Configuration l2_config;
+						l2_config.level = 2;
+						l2_config.miss_alloc = true;
+						l2_config.size = 512 << 10;
+						l2_config.associativity = 16;
+						l2_config.policy = Units::UnitCacheBase::Policy::LRU;
+						l2_config.num_slices = 4;
+						l2_config.crossbar_width = l2_config.num_slices;
+						l2_config.num_mshr = 192;
+						l2_config.num_subentries = 4;
+						l2_config.latency = 187;
 
-			UnitL1Cache::PowerConfig l1d_power_config;
+						UnitL2Cache::PowerConfig l2_power_config;
 
-			UnitRTCore::Configuration rtc_config;
-			rtc_config.max_rays = 128;
-			rtc_config.num_cache_ports = 4;
+						Units::UnitCrossbar::Configuration xbar_config;
+						xbar_config.num_slices = l2_config.num_slices;
+						xbar_config.slice_stride = l2_config.block_size;
+						xbar_config.num_partitions = num_partitions;
+						xbar_config.partition_stride = partition_stride;
 
-#elif 1 // Turing spec
-#if 1	// RTX 2080
-			double core_clock = 1515.0e6;
-			uint num_threads = 8;
-			uint num_tps = 64;
-			uint num_tms = 46;
-			uint64_t stack_size = 1024;
+						// L1d$
+						UnitL1Cache::Configuration l1d_config;
+						l1d_config.level = 1;
+						l1d_config.miss_alloc = true;
+						l1d_config.size = 128 << 10;
+						l1d_config.associativity = 32;
+						l1d_config.policy = Units::UnitCacheBase::Policy::FIFO;
+						l1d_config.num_banks = 4;
+						l1d_config.crossbar_width = l1d_config.num_banks;
+						l1d_config.num_mshr = 384;
+						l1d_config.num_subentries = 48;
+						l1d_config.latency = 39;
 
-			double dram_clock = 3500.0e6;
-			uint num_partitions = 8;
-			uint partition_stride = 1 << 12;
-#else	// RTX 2060
-			double core_clock = 1365.0e6;
-			uint num_threads = 1;
-			uint num_tps = 64;
-			uint num_tms = 30;
-			uint64_t stack_size = 512;
+						UnitL1Cache::PowerConfig l1d_power_config;
 
-			double dram_clock = 3500.0e6;
-			uint num_partitions = 6;
-			uint partition_stride = 1 << 12;
-#endif
+						UnitRTCore::Configuration rtc_config;
+						rtc_config.max_rays = 128;
+						rtc_config.num_cache_ports = 4;
 
-			// DRAM
-			UnitDRAM::Configuration dram_config;
-			dram_config.config_path = project_folder_path + "build/src/arches-v2/config-files/gddr6_14000_config.yaml";
-			dram_config.size = 1ull << 30; // 1GB
-			dram_config.clock_ratio = dram_clock / core_clock;
-			dram_config.latency = 92;
+			#elif 1 // Turing spec
+			#if 1	// RTX 2080
+						double core_clock = 1515.0e6;
+						uint num_threads = 8;
+						uint num_tps = 64;
+						uint num_tms = 46;
+						uint64_t stack_size = 1024;
 
-			// L2$
-			UnitL2Cache::Configuration l2_config;
-			l2_config.level = 2;
-			l2_config.miss_alloc = true;
-			l2_config.size = 512 << 10;
-			l2_config.associativity = 16;
-			l2_config.num_slices = 4;
-			l2_config.crossbar_width = l2_config.num_slices;
-			l2_config.num_mshr = 192;
-			l2_config.num_subentries = 4;
-			l2_config.latency = 160;
+						double dram_clock = 3500.0e6;
+						uint num_partitions = 8;
+						uint partition_stride = 1 << 12;
+			#else	// RTX 2060
+						double core_clock = 1365.0e6;
+						uint num_threads = 1;
+						uint num_tps = 64;
+						uint num_tms = 30;
+						uint64_t stack_size = 512;
 
-			UnitL2Cache::PowerConfig l2_power_config;
+						double dram_clock = 3500.0e6;
+						uint num_partitions = 6;
+						uint partition_stride = 1 << 12;
+			#endif
 
-			Units::UnitCrossbar::Configuration xbar_config;
-			xbar_config.num_slices = l2_config.num_slices;
-			xbar_config.slice_stride = l2_config.block_size;
-			xbar_config.num_partitions = num_partitions;
-			xbar_config.partition_stride = partition_stride;
+						// DRAM
+						UnitDRAM::Configuration dram_config;
+						dram_config.config_path = project_folder_path + "build/src/arches-v2/config-files/gddr6_14000_config.yaml";
+						dram_config.size = 1ull << 30; // 1GB
+						dram_config.clock_ratio = dram_clock / core_clock;
+						dram_config.latency = 92;
 
-			// L1d$
-			UnitL1Cache::Configuration l1d_config;
-			l1d_config.level = 1;
-			l1d_config.miss_alloc = true;
-			l1d_config.size = 64 << 10;
-			l1d_config.associativity = 32;
-			l1d_config.num_banks = 16;
-			l1d_config.crossbar_width = l1d_config.num_banks;
-			l1d_config.num_mshr = 256;
-			l1d_config.num_subentries = 16;
-			l1d_config.latency = 20;
+						// L2$
+						UnitL2Cache::Configuration l2_config;
+						l2_config.level = 2;
+						l2_config.miss_alloc = true;
+						l2_config.size = 512 << 10;
+						l2_config.associativity = 16;
+						l2_config.num_slices = 4;
+						l2_config.crossbar_width = l2_config.num_slices;
+						l2_config.num_mshr = 192;
+						l2_config.num_subentries = 4;
+						l2_config.latency = 160;
 
-			UnitL1Cache::PowerConfig l1d_power_config;
+						UnitL2Cache::PowerConfig l2_power_config;
 
-			Units::UnitTexture::Configuration tu_config;
+						Units::UnitCrossbar::Configuration xbar_config;
+						xbar_config.num_slices = l2_config.num_slices;
+						xbar_config.slice_stride = l2_config.block_size;
+						xbar_config.num_partitions = num_partitions;
+						xbar_config.partition_stride = partition_stride;
 
-			UnitRTCore::Configuration rtc_config;
-			rtc_config.max_rays = 64;
-			rtc_config.num_cache_ports = 4;
-#else // TRaX 1.0
-			double core_clock = 1000.0e6;
-			uint num_threads = 1;
-			uint num_tps = 32;
-			uint num_tms = 32;
-			uint num_rays = 32;
-			uint64_t stack_size = 4096;
+						// L1d$
+						UnitL1Cache::Configuration l1d_config;
+						l1d_config.level = 1;
+						l1d_config.miss_alloc = true;
+						l1d_config.size = 64 << 10;
+						l1d_config.associativity = 32;
+						l1d_config.num_banks = 16;
+						l1d_config.crossbar_width = l1d_config.num_banks;
+						l1d_config.num_mshr = 256;
+						l1d_config.num_subentries = 16;
+						l1d_config.latency = 20;
 
-			double dram_clock = 2000.0e6;
-			uint num_partitions = 4;
-			uint partition_stride = 1 << 12;
+						UnitL1Cache::PowerConfig l1d_power_config;
 
-			// DRAM
-			UnitDRAM::Configuration dram_config;
-			dram_config.config_path = project_folder_path + "build\\src\\arches-v2\\config-files\\gddr6_pch_config.yaml";
-			dram_config.size = 1ull << 30; // 1GB
-			dram_config.clock_ratio = dram_clock / core_clock;
-			dram_config.latency = 1;
-			// dram_config.latency = 56;
+						Units::UnitTexture::Configuration tu_config;
 
-			// L2$
-			UnitL2Cache::Configuration l2_config;
-			l2_config.level = 2;
-			l2_config.miss_alloc = false;
-			l2_config.size = 256 << 10;
-			l2_config.associativity = 16;
-			l2_config.num_slices = 1;
-			l2_config.crossbar_width = l2_config.num_slices;
-			l2_config.num_mshr = 1;
-			l2_config.num_subentries = 1;
-			l2_config.latency = 10;
+						UnitRTCore::Configuration rtc_config;
+						rtc_config.max_rays = 64;
+						rtc_config.num_cache_ports = 4;
+			#else // TRaX 1.0
+						double core_clock = 1000.0e6;
+						uint num_threads = 1;
+						uint num_tps = 32;
+						uint num_tms = 32;
+						uint num_rays = 32;
+						uint64_t stack_size = 4096;
 
-			UnitL2Cache::PowerConfig l2_power_config;
+						double dram_clock = 2000.0e6;
+						uint num_partitions = 4;
+						uint partition_stride = 1 << 12;
 
-			Units::UnitCrossbar::Configuration xbar_config;
-			xbar_config.num_slices = l2_config.num_slices;
-			xbar_config.slice_stride = l2_config.block_size;
-			xbar_config.num_partitions = num_partitions;
-			xbar_config.partition_stride = partition_stride;
+						// DRAM
+						UnitDRAM::Configuration dram_config;
+						dram_config.config_path = project_folder_path + "build\\src\\arches-v2\\config-files\\gddr6_pch_config.yaml";
+						dram_config.size = 1ull << 30; // 1GB
+						dram_config.clock_ratio = dram_clock / core_clock;
+						dram_config.latency = 1;
+						// dram_config.latency = 56;
 
-			// L1d$
-			UnitL1Cache::Configuration l1d_config;
-			l1d_config.level = 1;
-			l1d_config.miss_alloc = false;
-			l1d_config.size = 32 << 10;
-			l1d_config.associativity = 4;
-			l1d_config.num_banks = 8;
-			l1d_config.crossbar_width = l1d_config.num_banks;
-			l1d_config.num_mshr = 256;
-			l1d_config.num_subentries = 16;
-			l1d_config.latency = 1;
+						// L2$
+						UnitL2Cache::Configuration l2_config;
+						l2_config.level = 2;
+						l2_config.miss_alloc = false;
+						l2_config.size = 256 << 10;
+						l2_config.associativity = 16;
+						l2_config.num_slices = 1;
+						l2_config.crossbar_width = l2_config.num_slices;
+						l2_config.num_mshr = 1;
+						l2_config.num_subentries = 1;
+						l2_config.latency = 10;
 
-			UnitL1Cache::PowerConfig l1d_power_config;
-#endif
+						UnitL2Cache::PowerConfig l2_power_config;
+
+						Units::UnitCrossbar::Configuration xbar_config;
+						xbar_config.num_slices = l2_config.num_slices;
+						xbar_config.slice_stride = l2_config.block_size;
+						xbar_config.num_partitions = num_partitions;
+						xbar_config.partition_stride = partition_stride;
+
+						// L1d$
+						UnitL1Cache::Configuration l1d_config;
+						l1d_config.level = 1;
+						l1d_config.miss_alloc = false;
+						l1d_config.size = 32 << 10;
+						l1d_config.associativity = 4;
+						l1d_config.num_banks = 8;
+						l1d_config.crossbar_width = l1d_config.num_banks;
+						l1d_config.num_mshr = 256;
+						l1d_config.num_subentries = 16;
+						l1d_config.latency = 1;
+
+						UnitL1Cache::PowerConfig l1d_power_config;
+
+
+			#endif
+			*/
 
 			ELF elf(project_folder_path + "src/trax-kernel/riscv/kernel");
 
@@ -355,7 +366,7 @@ namespace Arches
 			ISA::RISCV::InstructionTypeNameDatabase::get_instance()[ISA::RISCV::InstrType::CUSTOM7] = "TRACERAY";
 			ISA::RISCV::isa[ISA::RISCV::CUSTOM_OPCODE0] = ISA::RISCV::TRaX::custom0;
 
-			uint num_sfus = static_cast<uint>(ISA::RISCV::InstrType::NUM_TYPES) * num_tms;
+			uint num_sfus = static_cast<uint>(ISA::RISCV::InstrType::NUM_TYPES) * config.num_tms;
 
 			Simulator simulator;
 			std::vector<Units::UnitTP *> tps;
@@ -365,33 +376,33 @@ namespace Arches
 			std::vector<Units::UnitTexture *> tus;
 			std::vector<UnitL1Cache *> l1ds;
 			std::vector<std::vector<Units::UnitBase *>> unit_tables;
-			unit_tables.reserve(num_tms);
+			unit_tables.reserve(config.num_tms);
 			std::vector<std::vector<Units::UnitSFU *>> sfu_lists;
-			sfu_lists.reserve(num_tms);
+			sfu_lists.reserve(config.num_tms);
 			std::vector<std::vector<Units::UnitMemoryBase *>> mem_lists;
-			mem_lists.reserve(num_tms);
+			mem_lists.reserve(config.num_tms);
 
 			// construct memory partitions
 			std::vector<UnitDRAM *> drams;
 			std::vector<UnitL2Cache *> l2s;
-			dram_config.num_ports = l2_config.num_slices;
-			l2_config.num_ports = l2_config.num_slices;
-			for (uint i = 0; i < num_partitions; ++i)
+			config.dram_config.num_ports = config.l2_config.num_slices;
+			config.l2_config.num_ports = config.l2_config.num_slices;
+			for (uint i = 0; i < config.num_partitions; ++i)
 			{
-				drams.push_back(_new UnitDRAM(dram_config));
+				drams.push_back(_new UnitDRAM(config.dram_config));
 				simulator.register_unit(drams.back());
 
-				l2_config.mem_higher_port = 0;
-				l2_config.mem_highers = {drams.back()};
-				l2s.push_back(_new UnitL2Cache(l2_config));
+				config.l2_config.mem_higher_port = 0;
+				config.l2_config.mem_highers = {drams.back()};
+				l2s.push_back(_new UnitL2Cache(config.l2_config));
 				simulator.register_unit(l2s.back());
 				simulator.new_unit_group();
 
-				xbar_config.mem_highers.push_back(l2s.back());
+				config.xbar_config.mem_highers.push_back(l2s.back());
 			}
 
-			xbar_config.num_clients = num_tms;
-			Units::UnitCrossbar xbar(xbar_config);
+			config.xbar_config.num_clients = config.num_tms;
+			Units::UnitCrossbar xbar(config.xbar_config);
 			simulator.register_unit(&xbar);
 			simulator.new_unit_group();
 
@@ -399,14 +410,14 @@ namespace Arches
 			vec_mem.resize(256 << 20);
 
 			paddr_t heap_address = elf.load(vec_mem.data());
-			for (uint addr = 0; addr < heap_address; addr += partition_stride)
-				drams[xbar.get_partition(addr)]->direct_write(vec_mem.data() + addr, partition_stride, xbar.strip_partition_bits(addr));
+			for (uint addr = 0; addr < heap_address; addr += config.partition_stride)
+				drams[xbar.get_partition(addr)]->direct_write(vec_mem.data() + addr, config.partition_stride, xbar.strip_partition_bits(addr));
 
-			TRaXKernelArgs kernel_args = initilize_buffers((Units::UnitMainMemoryBase **)drams.data(), xbar, heap_address, sim_config, partition_stride);
-			heap_address = align_to(partition_stride, heap_address);
+			TRaXKernelArgs kernel_args = initilize_buffers((Units::UnitMainMemoryBase **)drams.data(), xbar, heap_address, sim_config, config.partition_stride);
+			heap_address = align_to(config.partition_stride, heap_address);
 
-			for (uint addr = 0; addr < (256 << 20); addr += partition_stride)
-				drams[xbar.get_partition(addr)]->direct_read(vec_mem.data() + addr, partition_stride, xbar.strip_partition_bits(addr));
+			for (uint addr = 0; addr < (256 << 20); addr += config.partition_stride)
+				drams[xbar.get_partition(addr)]->direct_read(vec_mem.data() + addr, config.partition_stride, xbar.strip_partition_bits(addr));
 
 			// bool warm_l2 = false;
 			// if(warm_l2)
@@ -422,31 +433,31 @@ namespace Arches
 			//	for(uint i = 0; i < num_partitions; ++i)
 			//		serialize_l2 = !l2s[i]->deserialize("l2-p" + std::to_string(i) + ".bin", *drams[i]);
 
-			Units::UnitAtomicRegfile atomic_regs(num_tms);
+			Units::UnitAtomicRegfile atomic_regs(config.num_tms);
 			simulator.register_unit(&atomic_regs);
 			simulator.new_unit_group();
 
-			l1d_config.num_ports = num_tps;
-			l1d_config.mem_highers = {&xbar};
+			config.l1d_config.num_ports = config.num_tps;
+			config.l1d_config.mem_highers = {&xbar};
 #if TRAX_USE_RT_CORE
-			l1d_config.num_ports += num_tps;
-			l1d_config.crossbar_width *= 2;
+			config.l1d_config.num_ports += config.num_tps;
+			config.l1d_config.crossbar_width *= 2;
 #endif
 
-			for (uint tm_index = 0; tm_index < num_tms; ++tm_index)
+			for (uint tm_index = 0; tm_index < config.num_tms; ++tm_index)
 			{
 				std::vector<Units::UnitBase *> unit_table((uint)ISA::RISCV::InstrType::NUM_TYPES, nullptr);
 				std::vector<Units::UnitMemoryBase *> mem_list;
 				std::vector<Units::UnitSFU *> sfu_list;
 
-				l1d_config.mem_higher_port = tm_index;
-				l1ds.push_back(new UnitL1Cache(l1d_config));
+				config.l1d_config.mem_higher_port = tm_index;
+				l1ds.push_back(new UnitL1Cache(config.l1d_config));
 				simulator.register_unit(l1ds.back());
 				mem_list.push_back(l1ds.back());
 				unit_table[(uint)ISA::RISCV::InstrType::LOAD] = l1ds.back();
 				unit_table[(uint)ISA::RISCV::InstrType::STORE] = l1ds.back();
 
-				thread_schedulers.push_back(_new Units::UnitThreadScheduler(num_tps, tm_index, &atomic_regs, 32));
+				thread_schedulers.push_back(_new Units::UnitThreadScheduler(config.num_tps, tm_index, &atomic_regs, 32));
 				simulator.register_unit(thread_schedulers.back());
 				mem_list.push_back(thread_schedulers.back());
 				unit_table[(uint)ISA::RISCV::InstrType::CUSTOM0] = thread_schedulers.back();
@@ -457,12 +468,12 @@ namespace Arches
 				// unit_table[(uint)ISA::RISCV::InstrType::FMUL] = sfu_list.back();
 				// unit_table[(uint)ISA::RISCV::InstrType::FFMAD] = sfu_list.back();
 
-				sfu_list.push_back(_new Units::UnitSFU(num_tps / 8, 1, 1, num_tps));
+				sfu_list.push_back(_new Units::UnitSFU(config.num_tps / 8, 1, 1, config.num_tps));
 				simulator.register_unit(sfu_list.back());
 				unit_table[(uint)ISA::RISCV::InstrType::IMUL] = sfu_list.back();
 				unit_table[(uint)ISA::RISCV::InstrType::IDIV] = sfu_list.back();
 
-				sfu_list.push_back(_new Units::UnitSFU(num_tps / 16, 6, 1, num_tps));
+				sfu_list.push_back(_new Units::UnitSFU(config.num_tps / 16, 6, 1, config.num_tps));
 				simulator.register_unit(sfu_list.back());
 				unit_table[(uint)ISA::RISCV::InstrType::FDIV] = sfu_list.back();
 				unit_table[(uint)ISA::RISCV::InstrType::FSQRT] = sfu_list.back();
@@ -484,25 +495,25 @@ namespace Arches
 				// l1ss.push_back(new Units::UnitStreamCache(l1s_config));
 				// simulator.register_unit(l1ss.back());
 
-				tu_config.num_clients = num_tps;
-				tu_config.cache = l1ds.back();
-				tu_config.cache_port = num_tps + 1;
-				tu_config.cheat_mem = vec_mem.data();
+				config.tu_config.num_clients = config.num_tps;
+				config.tu_config.cache = l1ds.back();
+				config.tu_config.cache_port = config.num_tps + 1;
+				config.tu_config.cheat_mem = vec_mem.data();
 
-				tus.push_back(_new Units::UnitTexture(tu_config));
+				tus.push_back(_new Units::UnitTexture(config.tu_config));
 				simulator.register_unit(tus.back());
 				mem_list.push_back(tus.back());
 				unit_table[(uint)ISA::RISCV::InstrType::CUSTOM3] = tus.back();
 
 #if TRAX_USE_RT_CORE
-				rtc_config.num_clients = num_tps;
-				rtc_config.node_base_addr = (paddr_t)kernel_args.nodes;
-				rtc_config.tri_base_addr = (paddr_t)kernel_args.ft_blocks;
-				rtc_config.cache = l1ds.back();
-				rtc_config.cache_port = num_tps;
-				rtc_config.cache_port_stride = num_tps / l1d_config.num_banks;
+				config.rtc_config.num_clients = config.num_tps;
+				config.rtc_config.node_base_addr = (paddr_t)kernel_args.nodes;
+				config.rtc_config.tri_base_addr = (paddr_t)kernel_args.ft_blocks;
+				config.rtc_config.cache = l1ds.back();
+				config.rtc_config.cache_port = config.num_tps;
+				config.rtc_config.cache_port_stride = config.num_tps / config.l1d_config.num_banks;
 
-				rtcs.push_back(_new UnitRTCore(rtc_config));
+				rtcs.push_back(_new UnitRTCore(config.rtc_config));
 				simulator.register_unit(rtcs.back());
 				mem_list.push_back(rtcs.back());
 				unit_table[(uint)ISA::RISCV::InstrType::CUSTOM7] = rtcs.back();
@@ -514,12 +525,12 @@ namespace Arches
 
 				Units::UnitTP::Configuration tp_config;
 				tp_config.tm_index = tm_index;
-				tp_config.stack_size = stack_size;
+				tp_config.stack_size = config.stack_size;
 				tp_config.cheat_memory = vec_mem.data();
 				tp_config.unique_mems = &mem_lists.back();
 				tp_config.unique_sfus = &sfu_lists.back();
-				tp_config.num_threads = num_threads;
-				for (uint tp_index = 0; tp_index < num_tps; ++tp_index)
+				tp_config.num_threads = config.num_threads;
+				for (uint tp_index = 0; tp_index < config.num_tps; ++tp_index)
 				{
 					tp_config.tp_index = tp_index;
 					tp_config.unit_table = &unit_tables.back();
@@ -544,12 +555,12 @@ namespace Arches
 			Units::UnitTexture::Log tu_log;
 
 			uint delta = sim_config.get_int("logging-interval");
-			float delta_s = delta / core_clock;
+			float delta_s = delta / config.core_clock;
 			float delta_ns = delta_s * 1e9;
-			float delta_dram_cycles = delta_s * dram_clock;
-			float peak_dram_bandwidth = dram_clock / core_clock * num_partitions * 4 * 32 / 8;
-			float peak_l2_bandwidth = num_partitions * l2_config.num_slices * MemoryRequest::MAX_SIZE;
-			float peak_l1d_bandwidth = num_tms * l1d_config.num_banks * MemoryRequest::MAX_SIZE;
+			float delta_dram_cycles = delta_s * config.dram_clock;
+			float peak_dram_bandwidth = config.dram_clock / config.core_clock * config.num_partitions * 4 * 32 / 8;
+			float peak_l2_bandwidth = config.num_partitions * config.l2_config.num_slices * MemoryRequest::MAX_SIZE;
+			float peak_l1d_bandwidth = config.num_tms * config.l1d_config.num_banks * MemoryRequest::MAX_SIZE;
 
 			// peak_dram_bandwidth = 32 * core_clock * num_partitions;
 			// peak_l2_bandwidth = 32 * num_tms / 2;
@@ -577,11 +588,11 @@ namespace Arches
 		printf(" L2$ Hit/Half/Miss: %3.1f%%/%3.1f%%/%3.1f%%\n", 100.0 * l2_delta_log.hits / l2_delta_log.get_total(), 100.0 * l2_delta_log.half_misses / l2_delta_log.get_total(), 100.0 * l2_delta_log.misses / l2_delta_log.get_total());
 		printf("L1d$ Hit/Half/Miss: %3.1f%%/%3.1f%%/%3.1f%%\n", 100.0 * l1d_delta_log.hits / l1d_delta_log.get_total(), 100.0 * l1d_delta_log.half_misses / l1d_delta_log.get_total(), 100.0 * l1d_delta_log.misses / l1d_delta_log.get_total());
 		printf("                            \n");
-		printf(" L2$ Stalls: %0.2f%%\n", 100.0 * l2_delta_log.mshr_stalls / num_partitions / l2_config.num_slices / l2_config.num_banks / delta);
-		printf("L1d$ Stalls: %0.2f%%\n", 100.0 * l1d_delta_log.mshr_stalls / num_tms / l1d_config.num_banks / delta);
+		printf(" L2$ Stalls: %0.2f%%\n", 100.0 * l2_delta_log.mshr_stalls / config.num_partitions / config.l2_config.num_slices / config.l2_config.num_banks / delta);
+		printf("L1d$ Stalls: %0.2f%%\n", 100.0 * l1d_delta_log.mshr_stalls / config.num_tms / config.l1d_config.num_banks / delta);
 		printf("                            \n");
-		printf("L2$  Occ: %0.2f%%\n", 100.0 * l2_delta_log.get_total() / num_partitions / l2_config.num_slices / l2_config.num_banks / delta);
-		printf("L1d$ Occ: %0.2f%%\n", 100.0 * l1d_delta_log.get_total() / num_tms / l1d_config.num_banks / delta);
+		printf("L2$  Occ: %0.2f%%\n", 100.0 * l2_delta_log.get_total() / config.num_partitions / config.l2_config.num_slices / config.l2_config.num_banks / delta);
+		printf("L1d$ Occ: %0.2f%%\n", 100.0 * l1d_delta_log.get_total() / config.num_tms / config.l1d_config.num_banks / delta);
 		printf("                            \n");
 		
 		tu_delta_log.print(delta, tus.size());
@@ -594,15 +605,15 @@ namespace Arches
 
 			auto stop = std::chrono::high_resolution_clock::now();
 
-			for (uint addr = 0; addr < (256 << 20); addr += partition_stride)
-				drams[xbar.get_partition(addr)]->direct_read(vec_mem.data() + addr, partition_stride, xbar.strip_partition_bits(addr));
+			for (uint addr = 0; addr < (256 << 20); addr += config.partition_stride)
+				drams[xbar.get_partition(addr)]->direct_read(vec_mem.data() + addr, config.partition_stride, xbar.strip_partition_bits(addr));
 
 			// if(serialize_l2)
 			//	for(uint i = 0; i < num_partitions; ++i)
 			//		l2s[i]->serialize("l2-p" + std::to_string(i) + ".bin");
 
 			cycles_t frame_cycles = simulator.current_cycle;
-			double frame_time = frame_cycles / core_clock;
+			double frame_time = frame_cycles / config.core_clock;
 			double frame_time_ns = frame_time * 1e9;
 			double simulation_time = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count() / 1000.0;
 
@@ -623,13 +634,13 @@ namespace Arches
 			delta_log(l2_log, l2s);
 			printf(" L2$ Read: %.1f B/clk (%.2f%%)\n", (float)l2_log.bytes_read / frame_cycles, 100.0f * l2_log.bytes_read / frame_cycles / peak_l2_bandwidth);
 			l2_log.print(frame_cycles);
-			total_power += l2_log.print_power(l2_power_config, frame_time);
+			total_power += l2_log.print_power(config.l2_power_config, frame_time);
 
 			print_header("L1d$");
 			delta_log(l1d_log, l1ds);
 			printf("L1d$ Read: %.1f B/clk (%.2f%%)\n", (float)l1d_log.bytes_read / frame_cycles, 100.0 * l1d_log.bytes_read / frame_cycles / peak_l1d_bandwidth);
 			l1d_log.print(frame_cycles);
-			total_power += l1d_log.print_power(l1d_power_config, frame_time);
+			total_power += l1d_log.print_power(config.l1d_power_config, frame_time);
 
 			print_header("Texture Unit");
 			delta_log(tu_log, tus);
@@ -650,7 +661,7 @@ namespace Arches
 
 			print_header("Performance Summary");
 			printf("Cycles: %lld\n", simulator.current_cycle);
-			printf("Clock rate: %.0f MHz\n", core_clock / 1'000'000.0);
+			printf("Clock rate: %.0f MHz\n", config.core_clock / 1'000'000.0);
 			printf("Frame time: %.3g ms\n", frame_time * 1000.0);
 			if (!rtcs.empty())
 				printf("MRays/s: %.0f\n", rtc_log.rays / frame_time / 1'000'000.0);

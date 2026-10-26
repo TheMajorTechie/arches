@@ -8,7 +8,6 @@
 #include "trax-kernel/include.hpp"
 #include "trax-kernel/intersect.hpp"
 #include "units/unit-texture.hpp"
-#include "isa/instructions.hpp"
 
 namespace Arches
 {
